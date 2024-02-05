@@ -2,6 +2,8 @@
 
 Vlastní kód pro analýzu dat, která jsem shromáždil o veřejných zakázkách v České republice. Použito v mé bakalářské práci na Ekonomicko-správní fakultě Masarykovy univerzity v Brně.
 
+Skript pro sesbírání dat je dostupný na [https://github.com/BurgrLada/procurement-scraper](https://github.com/BurgrLada/procurement-scraper).
+
 ## Jak spustit
 
 Je třeba mít nainstalovaný a nakonfigurovaný [Python (verze 3)](https://www.python.org/downloads/) a správce balíčků [pip](https://pip.pypa.io/en/stable/installation/).
@@ -19,7 +21,10 @@ python3 model.py
 ***
 
 # Public procurement analysis
+
 Custom code to analyze the data I collected regarding public procurement in Czechia. Used in my Bachelor thesis at Faculty of Economics and Administration, Masaryk University, Brno.
+
+Script used for data collection is available at [https://github.com/BurgrLada/procurement-scraper](https://github.com/BurgrLada/procurement-scraper).
 
 ## How to run
 
