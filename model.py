@@ -1,8 +1,9 @@
 import pandas as pd
 import statsmodels.api as sm
-from statsmodels.stats.diagnostic import het_breuschpagan, het_white
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 import matplotlib.pyplot as plt
-import numpy as np
+import random
+
 
 # Načtení dat
 data = pd.read_csv('results.csv')
@@ -51,50 +52,52 @@ plt.legend()
 plt.xticks(range(1, 11))
 plt.show()
 
+# Rozdělení soutěžících na jednotlivé
+competitor_dummies = pd.get_dummies(data['počet soutěžících'], prefix='soutěžící')
+
+# Vybrání sloupců k uvažování v modelu
+columns = ['soutěžící_1', 'soutěžící_2', 'soutěžící_3', 'soutěžící_4', 'soutěžící_5', 'soutěžící_6', 'soutěžící_7'] # Vynechání posledních soutěžících pro prevenci multikolinearity
+
+# Připojení proměnných k datům
+data = pd.concat([data, competitor_dummies], axis=1)
+
 # Definování nezávisle a závisle proměnné
-X = data['počet soutěžících']
+X = pd.concat([data[columns]], axis=1)
+# potenciálně druhý model: X = data['počet soutěžících']
 y = data['poměr cen']
 
 # Přidání konstanty k nezávislé proměnné
 X = sm.add_constant(X)
+# X = X.astype(float) <- nutné pro jiné verze (např. v Kaggle)
 
 # Vypočítání OLS knihovnou statsmodels
-model = sm.OLS(y, X).fit()
+model = sm.OLS(y, X).fit(cov_type='HC3')
 print(model.summary())
 
-# Zobrazení grafu s lineární regresí 
-plt.scatter(data['počet soutěžících'], data['poměr cen'], label='Data')
-plt.plot(data['počet soutěžících'], model.predict(), color='red', label='Lineární regrese')
-plt.xlabel('Počet soutěžících')
-plt.ylabel('Poměr cen')
-# plt.title('Lineární regrese poměru cen na počet soutěžících')
-plt.legend()
-plt.show()
-
-# Test heteroskedasticity (BP)
-_, p_value, _, _ = het_breuschpagan(model.resid, X)
+# Výpočet VIF pro všechny vysvětlující proměnné
 print()
-print("Heteroskedasticity Test (Breusch-Pagan):")
-print(f"P-value: {p_value}")
+print("Kontrola multikolinearity (VIF):")
+vif_data = pd.DataFrame()
+vif_data["Proměnná"] = X.columns
+vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+print(vif_data)
 
-# Test heteroskedasticity (White)
-_, p_value, _, _ = het_white(model.resid, X)
-print()
-print("Heteroskedasticity Test (White):")
-print(f"P-value: {p_value}")
+# Omezení dat pro vizualizaci
+data['počet soutěžících'] = data['počet soutěžících'][data['počet soutěžících'] <= 7]
+data['poměr cen'] = data['poměr cen'][data['počet soutěžících'] <= 7]
 
-# Tepelná mapa s lineární regresí
+# Vzorek dat
+random.seed(42)
+sample = data.sample(1000)
 
-# Sjednocení dat do binů
-x_bins = np.linspace(data['počet soutěžících'].min(), data['počet soutěžících'].max(), 50)
-y_bins = np.linspace(data['poměr cen'].min(), data['poměr cen'].max(), 50)
-
-# Vykreslení teplné mapy
-plt.hist2d(data['počet soutěžících'], data['poměr cen'], bins=[x_bins, y_bins])
-plt.colorbar(label='Hustota')
-plt.plot(data['počet soutěžících'], model.predict(), color='red', label='Lineární regrese')
+# Vizualizace
+predicted_price_ratios = model.predict(X)
+plt.figure(figsize=(10, 6))
+plt.scatter(sample['počet soutěžících'], sample['poměr cen'], color='red', label='Náhodný vzorek dat (n=1000)')
+plt.scatter(data['počet soutěžících'], predicted_price_ratios, color='blue', label='Predikované hodnoty')
 plt.xlabel('Počet soutěžících')
-plt.ylabel('Poměr cen')
-# plt.title('Tepelná mapa a lineární regrese poměru cen na počet soutěžících')
+plt.ylabel('Poměr skutečné ceny ku očekávané')
+plt.xticks(range(1, 8))
+plt.grid(axis='y') 
 plt.legend()
 plt.show()
