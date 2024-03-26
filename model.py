@@ -42,14 +42,24 @@ print()
 print("Střední hodnota poměru cen pro různý počet soutěžících")
 print(average_price_ratio)
 
-# Histogram
+# Histogram střední hodnoty poměru cen pro různý počet soutěžících
 plt.figure()
 plt.bar(average_price_ratio.index, average_price_ratio.values, label='Střední hodnota poměru cen')
 plt.xlabel('Počet soutěžících')
 plt.ylabel('Poměr cen')
 # plt.title('Střední hodnota poměru cen pro různý počet soutěžících')
 plt.legend()
+plt.grid(axis='y')
 plt.xticks(range(1, 11))
+plt.show()
+
+# Histogram počtu zakázek pro různý počet soutěžících
+plt.hist(data['počet soutěžících'], bins=range(1, 12), align='left', rwidth=0.8)
+plt.xlabel('Počet soutěžících')
+plt.ylabel('Počet zakázek')
+# plt.title('Počet zakázek pro počty soutěžících')
+plt.xticks(range(1, 11))
+plt.grid(axis='y')
 plt.show()
 
 # Rozdělení soutěžících na jednotlivé
